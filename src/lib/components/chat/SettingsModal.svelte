@@ -10,12 +10,14 @@
 	import type { Writable } from 'svelte/store';
 	import { toast } from 'svelte-sonner';
 	import { config, models, settings, user } from '$lib/stores';
+	import { canUseApiKeys } from '$lib/utils/settings-access';
 	import type { SettingsModalRequest } from '$lib/stores';
 	import { getUserSettings, updateUserSettings } from '$lib/apis/users';
 	import { getBackendConfig, getModels as _getModels } from '$lib/apis';
 
 	import Modal from '../common/Modal.svelte';
 	import Account from './Settings/Account.svelte';
+	import ApiKeys from './Settings/ApiKeys.svelte';
 	import About from './Settings/About.svelte';
 	import General from './Settings/General.svelte';
 	import Interface from './Settings/Interface.svelte';
@@ -33,6 +35,7 @@
 	import SettingsAlt from '../icons/SettingsAlt.svelte';
 	import Link from '../icons/Link.svelte';
 	import UserCircle from '../icons/UserCircle.svelte';
+	import LockClosed from '../icons/LockClosed.svelte';
 	import SoundHigh from '../icons/SoundHigh.svelte';
 	import InfoCircle from '../icons/InfoCircle.svelte';
 	import WrenchAlt from '../icons/WrenchAlt.svelte';
@@ -153,6 +156,7 @@
 		usage: $i18n.t('Data'),
 		archived_chats: $i18n.t('Data'),
 		account: $i18n.t('Profile'),
+		api_keys: $i18n.t('Profile'),
 		about: $i18n.t('Profile')
 	};
 	// $i18n.t('Experience');
@@ -258,6 +262,12 @@
 			titleKey: 'settings.personal.account.title',
 			title: $i18n.t('settings.personal.account.title'),
 			searchPrefixes: ['settings.personal.account.']
+		},
+		{
+			id: 'api_keys',
+			titleKey: 'settings.personal.apiKeys.title',
+			title: $i18n.t('settings.personal.apiKeys.title'),
+			searchPrefixes: ['settings.personal.apiKeys.']
 		},
 		{
 			id: 'about',
@@ -401,6 +411,10 @@
 
 			if (tab.id === 'interface') {
 				return $user?.role === 'admin' || ($user?.permissions?.settings?.interface ?? true);
+			}
+
+			if (tab.id === 'api_keys') {
+				return canUseApiKeys({ user: $user, config: $config });
 			}
 
 			if (tab.id === 'personalization') {
@@ -739,6 +753,19 @@
 							<UserCircle className="size-3.5" strokeWidth="2" />
 							<span>{$i18n.t('settings.personal.account.title')}</span>
 						</button>
+					{:else if tabId === 'api_keys'}
+						<button
+							role="tab"
+							aria-controls="tab-api-keys"
+							aria-selected={selectedTab === 'api_keys'}
+							class={tabButtonClass(selectedTab === 'api_keys')}
+							on:click={() => {
+								selectTab('api_keys');
+							}}
+						>
+							<LockClosed className="size-3.5" strokeWidth="2" />
+							<span>{$i18n.t('settings.personal.apiKeys.title')}</span>
+						</button>
 					{:else if tabId === 'about'}
 						<button
 							role="tab"
@@ -859,6 +886,8 @@
 						toast.success($i18n.t('Settings saved successfully!'));
 					}}
 				/>
+			{:else if selectedTab === 'api_keys'}
+				<ApiKeys />
 			{:else if selectedTab === 'about'}
 				<About />
 			{:else if selectedTab === 'admin:general'}

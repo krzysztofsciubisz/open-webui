@@ -53,10 +53,7 @@ export function canSearchSetting(
 		/\.(notificationTargets|addNotificationTarget)\./.test(key)
 	)
 		return !!canUseNotificationTargets(context);
-	if (
-		key.startsWith('settings.personal.account.') &&
-		/\.(apiKeys|secrets|jwtToken|copyToken|apiKey|copyApiKey|createNewSecretKey)\./.test(key)
-	) {
+	if (key.startsWith('settings.personal.apiKeys.')) {
 		return (
 			canUseApiKeys(context) && (!/\.(jwtToken|copyToken)\./.test(key) || isSettingsAdmin(context))
 		);
